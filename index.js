@@ -9,6 +9,7 @@ const chalk = require('chalk');
 const androidAppPath = path.join(process.cwd(), 'android', 'app');
 const flavorsPath = path.join(androidAppPath, 'src');
 const iosPath = path.join(process.cwd(), 'ios');
+const templatesPath = path.join(__dirname, 'templates');
 
 const createFlavor = async ({ name, packageName, appName }) => {
   const flavorDir = path.join(flavorsPath, name);
@@ -71,7 +72,6 @@ const updateBuildGradle = async (flavorName) => {
 `;
     content = content.slice(0, insertIndex) + flavorBlock + content.slice(insertIndex);
   } else {
-    // Append new flavor
     const regex = /productFlavors\s*\{([\s\S]*?)\}/;
     const match = content.match(regex);
     if (match && !match[1].includes(flavorName)) {
@@ -100,13 +100,42 @@ const createIosFolder = async (flavorName) => {
 
 const createEnvFile = async (flavorName) => {
   const envPath = path.join(process.cwd(), `.env.${flavorName}`);
+  const templatePath = path.join(templatesPath, 'env.example');
+
   if (fs.existsSync(envPath)) return;
 
-  const content = `# Environment config for ${flavorName}
-API_URL=https://api.${flavorName}.example.com
-APP_ENV=${flavorName.toUpperCase()}`;
+  let content = `# Environment config for ${flavorName}\nAPI_URL=https://api.${flavorName}.example.com\nAPP_ENV=${flavorName.toUpperCase()}`;
+  if (fs.existsSync(templatePath)) {
+    content = await fs.readFile(templatePath, 'utf8');
+    content = content.replace(/YOUR_FLAVOR/g, flavorName);
+  }
+
   await fs.writeFile(envPath, content);
   console.log(chalk.cyan(`🧪 Created .env.${flavorName}`));
+
+  const dotenvImport = `require('react-native-config');`;
+  const appJsPath = path.join(process.cwd(), 'App.js');
+  if (fs.existsSync(appJsPath)) {
+    const appContent = await fs.readFile(appJsPath, 'utf8');
+    if (!appContent.includes("react-native-config")) {
+      const updatedContent = `${dotenvImport}\n\n${appContent}`;
+      await fs.writeFile(appJsPath, updatedContent);
+      console.log(chalk.green(`✅ Injected react-native-config import into App.js`));
+    const { execSync } = require('child_process');
+      try {
+        execSync('npm list react-native-config', { stdio: 'ignore' });
+        console.log(chalk.green(`✅ react-native-config is already installed.`));
+      } catch {
+        console.log(chalk.yellow(`📦 Installing react-native-config...`));
+        try {
+          execSync('npm install react-native-config', { stdio: 'inherit' });
+          console.log(chalk.green(`✅ Successfully installed react-native-config.`));
+        } catch (installErr) {
+          console.log(chalk.red(`❌ Failed to install react-native-config. Please install it manually.`));
+        }
+      }
+    }
+  }
 };
 
 program
