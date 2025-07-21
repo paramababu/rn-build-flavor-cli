@@ -1,6 +1,9 @@
 # rn-build-flavor-cli
 
-A simple and powerful CLI tool to generate and manage multiple build flavors (dev, staging, prod, etc.) for React Native apps.
+[![npm version](https://badge.fury.io/js/rn-build-flavor-cli.svg)](https://www.npmjs.com/package/rn-build-flavor-cli)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/paramababu/rn-build-flavor-cli?style=social)](https://github.com/paramababu/rn-build-flavor-cli)
+
 
 ---
 
