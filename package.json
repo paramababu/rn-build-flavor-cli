@@ -1,0 +1,30 @@
+{
+  "name": "rn-build-flavor-cli",
+  "version": "1.0.1",
+  "description": "CLI tool to add build flavors for React Native apps",
+  "main": "index.js",
+  "bin": {
+    "rn-build-flavor": "./index.js"
+  },
+  "keywords": [
+    "react-native",
+    "flavor",
+    "cli",
+    "android",
+    "ios",
+    "env",
+    "build"
+  ],
+  "author": "BabuParaman",
+  "files": [
+  "index.js",
+  "README.md"
+],
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^11.0.0",
+    "fs-extra": "^11.2.0",
+    "inquirer": "^9.2.7"
+  }
+}
