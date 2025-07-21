@@ -114,13 +114,13 @@ const createEnvFile = async (flavorName) => {
   console.log(chalk.cyan(`🧪 Created .env.${flavorName}`));
 
   const dotenvImport = `require('react-native-config');`;
-  const appJsPath = path.join(process.cwd(), 'App.js');
+  const appJsPath = fs.existsSync(path.join(process.cwd(), 'App.tsx')) ? path.join(process.cwd(), 'App.tsx') : path.join(process.cwd(), 'App.js');
   if (fs.existsSync(appJsPath)) {
     const appContent = await fs.readFile(appJsPath, 'utf8');
     if (!appContent.includes("react-native-config")) {
       const updatedContent = `${dotenvImport}\n\n${appContent}`;
       await fs.writeFile(appJsPath, updatedContent);
-      console.log(chalk.green(`✅ Injected react-native-config import into App.js`));
+      console.log(chalk.green(`✅ Injected react-native-config import into ${path.basename(appJsPath)}`));
     const { execSync } = require('child_process');
       try {
         execSync('npm list react-native-config', { stdio: 'ignore' });
@@ -128,7 +128,11 @@ const createEnvFile = async (flavorName) => {
       } catch {
         console.log(chalk.yellow(`📦 Installing react-native-config...`));
         try {
-          execSync('npm install react-native-config', { stdio: 'inherit' });
+          const hasYarn = fs.existsSync(path.join(process.cwd(), 'yarn.lock'));
+const hasPnpm = fs.existsSync(path.join(process.cwd(), 'pnpm-lock.yaml'));
+const installCmd = hasYarn ? 'yarn add react-native-config' : hasPnpm ? 'pnpm add react-native-config' : 'npm install react-native-config';
+console.log(chalk.blueBright(`🔧 Used: ${installCmd}`));
+execSync(installCmd, { stdio: 'inherit' });
           console.log(chalk.green(`✅ Successfully installed react-native-config.`));
         } catch (installErr) {
           console.log(chalk.red(`❌ Failed to install react-native-config. Please install it manually.`));

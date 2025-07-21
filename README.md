@@ -4,15 +4,18 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/paramababu/rn-build-flavor-cli?style=social)](https://github.com/paramababu/rn-build-flavor-cli)
 
+CLI to automatically create Android/iOS build flavors for React Native projects with .env support and `react-native-config` integration.
 
 ---
 
 ## 🚀 Features
 
-- 📱 Creates Android and iOS flavor folders
-- 🛠️ Automatically injects productFlavors into `build.gradle`
-- 🌍 Generates environment-specific `.env` files
-- ⚡ Fast setup using one-liner CLI command
+- 📁 Creates `android/app/src/<flavor>` folder with manifest and strings
+- 📜 Injects flavor into `build.gradle` (`productFlavors`)
+- 🍏 Generates `ios/GoogleService-Info-<flavor>.plist`
+- 🌱 Creates `.env.<flavor>` file using a customizable template
+- 🧠 Injects `require('react-native-config')` into `App.js` or `App.tsx`
+- 📦 Auto-installs `react-native-config` using npm/yarn/pnpm (based on lock files)
 
 ---
 
@@ -22,12 +25,6 @@
 npm install -g rn-build-flavor-cli
 ```
 
-Or use it directly with NPX:
-
-```bash
-npx rn-build-flavor create dev --package=com.myapp.dev --name="MyApp Dev"
-```
-
 ---
 
 ## 🛠️ Usage
@@ -35,54 +32,56 @@ npx rn-build-flavor create dev --package=com.myapp.dev --name="MyApp Dev"
 ### Create a new flavor
 
 ```bash
-rn-build-flavor create <flavorName> \
-  --package=com.myapp.<flavorName> \
-  --name="MyApp <FlavorName>"
-```
-
-**Example:**
-
-```bash
-rn-build-flavor create staging \
+npx rn-build-flavor-cli create staging \
   --package=com.myapp.staging \
   --name="MyApp Staging"
 ```
 
 ---
 
-## 🔧 What It Does
-
-✅ Adds a new Android flavor folder at `android/app/src/<flavorName>`  
-✅ Injects `productFlavors` block into `android/app/build.gradle`  
-✅ Creates `.env.<flavorName>` file  
-✅ Creates `GoogleService-Info-<flavorName>.plist` in iOS folder  
-
----
-
-## 📁 Folder Output
+## 📁 Resulting Structure
 
 ```
-android/
-└── app/
-    └── src/
-        └── dev/
-            ├── AndroidManifest.xml
-            └── res/values/strings.xml
+android/app/src/staging/
+├── AndroidManifest.xml
+└── res/values/strings.xml
 
 ios/
-└── GoogleService-Info-dev.plist
+└── GoogleService-Info-staging.plist
 
-.env.dev
+.env.staging
+
+App.js (or App.tsx)
+└── require('react-native-config') injected
 ```
 
 ---
 
-## 🧑‍💻 Contributing
+## 🧪 Template Support
 
-PRs welcome! Please file an issue for any bug or feature suggestion.
+You can customize `.env` by creating:
+```
+templates/env.example
+```
+
+```env
+API_URL=https://api.YOUR_FLAVOR.example.com
+APP_ENV=YOUR_FLAVOR
+```
+
+This will be used and replaced automatically.
+
+---
+
+## 🔧 Auto Dependency Detection
+
+The CLI will detect your project setup and use:
+- `yarn add react-native-config`
+- `pnpm add react-native-config`
+- `npm install react-native-config`
 
 ---
 
 ## 📄 License
 
-MIT
+MIT © [paramababu](https://github.com/paramababu)
