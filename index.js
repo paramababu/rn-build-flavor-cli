@@ -72,16 +72,27 @@ const updateBuildGradle = async (flavorName) => {
 `;
     content = content.slice(0, insertIndex) + flavorBlock + content.slice(insertIndex);
   } else {
-    const regex = /productFlavors\s*\{([\s\S]*?)\}/m;
-    const match = content.match(regex);
-    if (match && !match[1].includes(flavorName)) {
-      const insertPos = match.index + match[0].lastIndexOf('}');
-      const flavorBlock = `    ${flavorName} {
+    const startIdx = content.search(/productFlavors\s*{/);
+    if (startIdx !== -1) {
+      const openIdx = content.indexOf('{', startIdx);
+      let braceCount = 1;
+      let endIdx = openIdx + 1;
+      while (braceCount > 0 && endIdx < content.length) {
+        const char = content[endIdx];
+        if (char === '{') braceCount++;
+        if (char === '}') braceCount--;
+        endIdx++;
+      }
+
+      const flavorsBlock = content.slice(openIdx + 1, endIdx - 1);
+      if (!flavorsBlock.includes(flavorName)) {
+        const flavorBlock = `    ${flavorName} {
         dimension "default"
         applicationIdSuffix ".${flavorName}"
         resValue "string", "app_name", "${flavorName}"
     }\n`;
-      content = content.slice(0, insertPos) + flavorBlock + content.slice(insertPos);
+        content = content.slice(0, endIdx - 1) + flavorBlock + content.slice(endIdx - 1);
+      }
     }
   }
 
