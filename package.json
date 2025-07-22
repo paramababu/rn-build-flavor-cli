@@ -1,6 +1,6 @@
 {
   "name": "rn-build-flavor-cli",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "CLI tool to add build flavors for React Native apps",
   "main": "index.js",
   "bin": {
