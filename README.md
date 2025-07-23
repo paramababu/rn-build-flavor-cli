@@ -4,7 +4,7 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/paramababu/rn-build-flavor-cli?style=social)](https://github.com/paramababu/rn-build-flavor-cli)
 
-CLI to automatically create Android/iOS build flavors for React Native projects with .env support and `react-native-config` integration.
+CLI to automatically create Android/iOS build flavors for React Native projects with `.env` support and `react-native-config` integration.
 
 ---
 
@@ -16,6 +16,10 @@ CLI to automatically create Android/iOS build flavors for React Native projects 
 - 🌱 Creates `.env.<flavor>` file using a customizable template
 - 🧠 Injects `require('react-native-config')` into `App.js` or `App.tsx`
 - 📦 Auto-installs `react-native-config` using npm/yarn/pnpm (based on lock files)
+- 📜 Automatically adds run script to `package.json` like:  
+  ```json
+  "android-staging": "npx react-native run-android --variant=stagingDebug"
+  ```
 
 ---
 
@@ -36,6 +40,26 @@ npx rn-build-flavor-cli create staging \
   --package=com.myapp.staging \
   --name="MyApp Staging"
 ```
+
+---
+
+## 📲 How to Run a Flavor
+
+Once created, a script is added to your `package.json`. You can run the app using:
+
+```bash
+yarn android-staging
+# or
+npm run android-staging
+```
+
+This will internally run:
+
+```bash
+npx react-native run-android --variant=stagingDebug
+```
+
+⚠️ **Note:** Do not name your flavor `test` — it's a reserved word in Gradle and will break the build.
 
 ---
 

@@ -25,8 +25,7 @@ const createFlavor = async ({ name, packageName, appName }) => {
   await fs.ensureDir(resDir);
 
   const manifestContent = `<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="${packageName}">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application android:label="@string/app_name">
         <!-- Additional config if needed -->
@@ -45,6 +44,7 @@ const createFlavor = async ({ name, packageName, appName }) => {
   await updateBuildGradle(name);
   await createIosFolder(name);
   await createEnvFile(name);
+  await addRunScriptToPackageJson(name);
 
   console.log(chalk.green(`✅ Flavor '${name}' created successfully!`));
 };
@@ -72,22 +72,54 @@ const updateBuildGradle = async (flavorName) => {
 `;
     content = content.slice(0, insertIndex) + flavorBlock + content.slice(insertIndex);
   } else {
-    const regex = /productFlavors\s*\{([\s\S]*?)\}/m;
-    const match = content.match(regex);
-    if (match && !match[1].includes(flavorName)) {
-      const insertPos = match.index + match[0].lastIndexOf('}');
-      const flavorBlock = `    ${flavorName} {
+    const startIdx = content.search(/productFlavors\s*{/);
+    if (startIdx !== -1) {
+      const openIdx = content.indexOf('{', startIdx);
+      let braceCount = 1;
+      let endIdx = openIdx + 1;
+      while (braceCount > 0 && endIdx < content.length) {
+        const char = content[endIdx];
+        if (char === '{') braceCount++;
+        if (char === '}') braceCount--;
+        endIdx++;
+      }
+
+      const flavorsBlock = content.slice(openIdx + 1, endIdx - 1);
+      if (!flavorsBlock.includes(flavorName)) {
+        const flavorBlock = `    ${flavorName} {
         dimension "default"
         applicationIdSuffix ".${flavorName}"
         resValue "string", "app_name", "${flavorName}"
     }\n`;
-      content = content.slice(0, insertPos) + flavorBlock + content.slice(insertPos);
+        content = content.slice(0, endIdx - 1) + flavorBlock + content.slice(endIdx - 1);
+      }
     }
   }
 
   await fs.writeFile(buildGradlePath, content);
   console.log(chalk.blue(`🛠️  Updated build.gradle with '${flavorName}' flavor.`));
 };
+
+const addRunScriptToPackageJson = async (flavorName) => {
+  const packageJsonPath = path.join(process.cwd(), 'package.json');
+  if (!fs.existsSync(packageJsonPath)) return;
+
+  const pkg = await fs.readJson(packageJsonPath);
+  const scriptName = `android-${flavorName}`;
+  const gradleCommand = `cd android && ./gradlew install${capitalize(flavorName)}Debug`;
+
+  if (!pkg.scripts) pkg.scripts = {};
+  if (!pkg.scripts[scriptName]) {
+    pkg.scripts[scriptName] = gradleCommand;
+    await fs.writeJson(packageJsonPath, pkg, { spaces: 2 });
+    console.log(chalk.green(`✅ Added script: "${scriptName}": "${gradleCommand}"`));
+  } else {
+    console.log(chalk.yellow(`⚠️  Script "${scriptName}" already exists in package.json`));
+  }
+};
+
+const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
 
 const createIosFolder = async (flavorName) => {
   const plistPath = path.join(iosPath, `GoogleService-Info-${flavorName}.plist`);
